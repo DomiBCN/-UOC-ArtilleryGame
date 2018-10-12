@@ -27,12 +27,14 @@ public class PlayerControl : MonoBehaviour
     Transform pivot;
     List<KeyCode> actions = new List<KeyCode>();
 
+    float increment = 0;
+
     void Awake()
     {
         // Setting up references.
         groundCheck = transform.Find("groundCheck");
         anim = GetComponent<Animator>();
-        pivot = transform.FindChild("Pivot");
+        pivot = transform.Find("Pivot");
     }
 
 
@@ -51,22 +53,40 @@ public class PlayerControl : MonoBehaviour
     {
         // Cache the horizontal input.
         float h = Input.GetAxis("Horizontal");
-
+        
+        //When we move the player using the buttons(not keyboard) -> horizontal movement won't be dected and it's value will be 0
         if (h == 0)
         {
-            if (actions.Contains(KeyCode.LeftArrow))
+            if (actions.Contains(KeyCode.A))
             {
-                h = anim.GetFloat("Speed") - 0.1f;
+                if (increment > -1)
+                {
+                    increment += -0.1f;
+                }
+                h = increment;
             }
-            if (actions.Contains(KeyCode.RightArrow))
+            else if (actions.Contains(KeyCode.D))
             {
-                h = anim.GetFloat("Speed") + 0.1f;
+                if (increment < 1)
+                {
+                    increment += 0.1f;
+                }
+                h = increment;
+            }
+            else
+            {
+                increment = 0;
             }
         }
         if (actions.Contains(KeyCode.UpArrow))
         {
             tilt += 1.0f;
         }
+        else if (actions.Contains(KeyCode.DownArrow))
+        {
+            tilt -= 1.0f;
+        }
+
         tilt = Mathf.Clamp(tilt, 0, 75);
         pivot.rotation = Quaternion.Euler(0, 0, tilt);
 
@@ -80,9 +100,10 @@ public class PlayerControl : MonoBehaviour
 
         // If the player's horizontal velocity is greater than the maxSpeed...
         if (Mathf.Abs(GetComponent<Rigidbody2D>().velocity.x) > maxSpeed)
+        {
             // ... set the player's velocity to the maxSpeed in the x axis.
             GetComponent<Rigidbody2D>().velocity = new Vector2(Mathf.Sign(GetComponent<Rigidbody2D>().velocity.x) * maxSpeed, GetComponent<Rigidbody2D>().velocity.y);
-
+        }
         // If the input is moving the player right and the player is facing left...
         if (h > 0 && !facingRight)
             // ... flip the player.
@@ -91,7 +112,10 @@ public class PlayerControl : MonoBehaviour
         else if (h < 0 && facingRight)
             // ... flip the player.
             Flip();
-
+        if (h != 0)
+        {
+            //Debug.Log("time: " + Time.deltaTime);
+        }
         // If the player should jump...
         if (jump)
         {
@@ -212,6 +236,9 @@ public class PlayerControl : MonoBehaviour
 
     public void Jump()
     {
-        jump = true;
+        if (grounded)
+        {
+            jump = true;
+        }
     }
 }
