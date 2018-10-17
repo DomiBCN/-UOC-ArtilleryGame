@@ -8,7 +8,9 @@ public class PlayerControl : MonoBehaviour
     public bool facingRight = true;         // For determining which way the player is currently facing.
     [HideInInspector]
     public bool jump = false;               // Condition for whether the player should jump.
-
+    [HideInInspector]
+    public bool hasTurn = false;
+    protected float tilt;
 
     public float moveForce = 365f;          // Amount of force added to move the player left and right.
     public float maxSpeed = 5f;             // The fastest the player can travel in the x axis.
@@ -23,7 +25,6 @@ public class PlayerControl : MonoBehaviour
     private Transform groundCheck;          // A position marking where to check if the player is grounded.
     private bool grounded = false;          // Whether or not the player is grounded.
     private Animator anim;					// Reference to the player's animator component.
-    float tilt;
     Transform pivot;
     List<KeyCode> actions = new List<KeyCode>();
 
@@ -51,9 +52,14 @@ public class PlayerControl : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!hasTurn)
+        {
+            return;
+        }
         // Cache the horizontal input.
         float h = Input.GetAxis("Horizontal");
-        
+        Debug.Log(h);
+
         //When we move the player using the buttons(not keyboard) -> horizontal movement won't be dected and it's value will be 0
         if (h == 0)
         {
@@ -135,7 +141,7 @@ public class PlayerControl : MonoBehaviour
     }
 
 
-    void Flip()
+    protected void Flip()
     {
         // Switch the way the player is labelled as facing.
         facingRight = !facingRight;
@@ -184,6 +190,7 @@ public class PlayerControl : MonoBehaviour
             return i;
     }
 
+    #region Movement
     void UpdateActionDown(KeyCode code)
     {
         if (!actions.Contains(code)) { actions.Add(code); }
@@ -233,6 +240,7 @@ public class PlayerControl : MonoBehaviour
     {
         UpdateActionUp(KeyCode.UpArrow);
     }
+    #endregion
 
     public void Jump()
     {

@@ -3,16 +3,22 @@ using System.Collections;
 
 public class Gun : MonoBehaviour
 {
+
+    public Camera groundCamera;
+
+    public enum States { Down, Up, Fire };
+    public States state = States.Up;
+
     public Rigidbody2D rocket;				// Prefab of the rocket.
     public Sprite attackBarSprite;
+    public delegate void GunFired();
+    public event GunFired gunFired;
 
-    
     Animator anim;                  // Reference to the Animator component.
     float speed = 0f;               // The speed the rocket will fire at.
+    float targetSpeed = 0f;
     Transform attackBar;
-    enum States { Down, Up, Fire };
 
-    States state = States.Up;
 
     // Setting up the references.
     void Awake()
@@ -32,6 +38,12 @@ public class Gun : MonoBehaviour
 
     void Update()
     {
+        if (targetSpeed > 0)
+        {
+            state = States.Down;
+            if (speed >= targetSpeed) state = States.Fire;
+        }
+
         switch (state)
         {
             case States.Down:
@@ -55,7 +67,10 @@ public class Gun : MonoBehaviour
 
     public void FireUp()
     {
-        state = States.Fire;
+        //if it's the end of our turn and we are still charging our rocket
+        //we will change 'state' from 'Down', in 'GameplayManager(line 61)', to 'Fire'
+        //so if 'state' is not 'Down' we won't shoot anything, because the rocket has already been shoot
+        state = state == States.Down ? States.Fire : States.Up;
     }
 
     public void Fire()
@@ -63,8 +78,34 @@ public class Gun : MonoBehaviour
         anim.SetTrigger("Shoot");
         GetComponent<AudioSource>().Play();
         Rigidbody2D bulletInstance = Instantiate(rocket, transform.position, transform.rotation) as Rigidbody2D;
-        bulletInstance.velocity = transform.right.normalized * speed;
-        speed = 0;
+
+        //We pass the animator to our rocket->to animate the camera on explode
+        bulletInstance.GetComponentInChildren<Rocket>().anim = anim;
+        //pass groundCamera to rocket -> on explode capture image
+        bulletInstance.GetComponentInChildren<Rocket>().groundCam = groundCamera;
+
+        if (transform.root.GetComponent<PlayerControl>().facingRight)
+        {
+            bulletInstance.velocity = transform.right.normalized * speed;
+        }
+        else
+        {
+            bulletInstance.velocity = new Vector2(-transform.right.x, transform.right.y).normalized * speed;
+        }
+        bulletInstance.GetComponentInChildren<Rocket>().ignoreTag = transform.root.tag;
+        
+        
+        
+        targetSpeed = speed = 0;
         attackBar.localScale = Vector3.up * 2 + Vector3.forward;
+        if (gunFired != null)
+        {
+            gunFired();
+        }
+    }
+
+    public void Fire(float targetSpeed)
+    {
+        this.targetSpeed = targetSpeed;
     }
 }
