@@ -1,18 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 public class Rocket : MonoBehaviour
 {
     public GameObject explosion;		// Prefab of explosion effect.
     public string ignoreTag;
     public Animator anim;
-
-    private Texture2D newTexture;
-    private Color[] textureColors;
-    BoxCollider2D hit;
-    SpriteRenderer spriteRend;
-    Color zeroAlpha = Color.clear;
+    //radius of destruction
     public int radius = 40;
+
+    bool destroyRocket = false;
+    bool explodeRocket = true;
 
     void Start()
     {
@@ -51,6 +50,65 @@ public class Rocket : MonoBehaviour
         // Otherwise if it hits a bomb crate...
         //else 
 
+        //MULTIPLE OBJECTS DAMAGE
+        #region multiple damage
+        //if (col.tag == "BombPickup" || (col.gameObject.tag != ignoreTag && col.gameObject.tag != "Bullet" && col.gameObject.tag != "ExplosionFX" && !col.isTrigger))
+        //{
+        //    Collider2D[] collidersGround = Physics2D.OverlapCircleAll(transform.position, 1.5f, 1 << LayerMask.NameToLayer("Ground"));
+        //    var collidersGroundGrouped = collidersGround.GroupBy(c => c.gameObject);
+        //    Collider2D[] collidersPickups = Physics2D.OverlapCircleAll(transform.position, 1.5f, 1 << LayerMask.NameToLayer("Pickups"));
+        //    bool crateExploded = false;
+        //    foreach (Collider2D hit in collidersPickups)
+        //    {
+        //        if (!crateExploded)
+        //        {
+        //            crateExploded = true;
+        //            // ... find the Bomb script and call the Explode function.
+        //            hit.gameObject.GetComponent<Bomb>().Explode();
+        //        }
+        //        // Destroy the bomb crate.
+        //        Destroy(hit.transform.root.gameObject);
+
+        //        destroyRocket = true;
+        //        explodeRocket = false;
+
+        //    }
+
+        //    // For each collider...
+        //    foreach (var objectHit in collidersGroundGrouped)
+        //    {
+        //        Collider2D hit = objectHit.FirstOrDefault();
+        //        //We use the BoxCollider just for pixel painting accuracy
+        //        //The rocket has to explode with the other collider(PolygonCollider)
+        //        BoxCollider2D boxCollider = hit.gameObject.GetComponent<BoxCollider2D>();
+
+        //        if (!destroyRocket)
+        //        {
+        //            GameObject explosion = new GameObject("Explosion");
+        //            explosion.transform.position = transform.position;
+        //            explosion.tag = "ExplosionFX";
+        //            Destroy(explosion, 0.5f);
+        //            CircleCollider2D explosionRadius = explosion.AddComponent<CircleCollider2D>();
+        //            explosionRadius.radius = 2.5f;
+        //        }
+        //        //Creates explosion crater setting pixels to alpha 0
+        //        PixelsToAlpha.UpdateTexture(new Vector2(transform.position.x, transform.position.y), hit.gameObject, boxCollider, radius);
+        //        destroyRocket = true;
+
+        //    }
+        //    if (destroyRocket)
+        //    {
+        //        // Instantiate the explosion and destroy the rocket.
+        //        if (explodeRocket)
+        //        {
+        //            OnExplode();
+        //        }
+        //        Destroy(gameObject);
+        //    }
+
+        //}
+        #endregion
+        #region single object damage
         if (col.tag == "BombPickup")
         {
             // ... find the Bomb script and call the Explode function.
@@ -65,105 +123,26 @@ public class Rocket : MonoBehaviour
         // Otherwise if the player manages to shoot himself...
         //Bullet tag -> if we wouldn't put it, it wouldn' cause any trouble but we don't want to set boxCollider for nothing
         //ExplosionFX tag -> Necessary! When doing an air attack we don't want explosions triggered by other rocket explosions
-        else if (col.gameObject.tag != ignoreTag && col.gameObject.tag != "Bullet" && col.gameObject.tag != "ExplosionFX")
+        else if (col.gameObject.tag != ignoreTag && col.gameObject.tag != "Bullet" && col.gameObject.tag != "ExplosionFX" && col.tag != "PlatformEnd" && !col.isTrigger)
         {
             //We use the BoxCollider just for pixel painting accuracy
             //The rocket has to explode with the other collider(PolygonCollider)
             BoxCollider2D boxCollider = col.gameObject.GetComponent<BoxCollider2D>();
 
-            if (col != boxCollider)
-            {
-                GameObject explosion = new GameObject("Explosion");
-                explosion.transform.position = transform.position;
-                explosion.tag = "ExplosionFX";
-                Destroy(explosion, 0.5f);
-                CircleCollider2D explosionRadius = explosion.AddComponent<CircleCollider2D>();
-                explosionRadius.radius = 2.5f;
+            GameObject explosion = new GameObject("Explosion");
+            explosion.transform.position = transform.position;
+            explosion.tag = "ExplosionFX";
+            Destroy(explosion, 0.5f);
+            CircleCollider2D explosionRadius = explosion.AddComponent<CircleCollider2D>();
+            explosionRadius.radius = 2.5f;
 
-                //Creates explosion crater setting pixels to alpha 0
-                PixelsToAlpha.UpdateTexture(new Vector2(transform.position.x, transform.position.y), col.gameObject, boxCollider, radius);
-                //StartCoroutine(UpdateTexture(col.gameObject, boxCollider));
-                // Instantiate the explosion and destroy the rocket.
-                OnExplode();
-                Destroy(gameObject);
-            }
+            //Creates explosion crater setting pixels to alpha 0
+            PixelsToAlpha.UpdateTexture(new Vector2(transform.position.x, transform.position.y), col.gameObject, boxCollider, radius);
+            // Instantiate the explosion and destroy the rocket.
+            OnExplode();
+            Destroy(gameObject);
+
         }
+        #endregion
     }
-
-    #region obsolete
-    //IEnumerator UpdateTexture(GameObject objectToExplode, BoxCollider2D boxCollider)
-    //{
-    //    try
-    //    {
-    //        spriteRend = objectToExplode.GetComponent<SpriteRenderer>();
-    //        var tex = spriteRend.sprite.texture;
-    //        newTexture = new Texture2D(tex.width, tex.height, TextureFormat.ARGB32, false);
-    //        newTexture.filterMode = FilterMode.Bilinear;
-    //        newTexture.wrapMode = TextureWrapMode.Clamp;
-    //        textureColors = tex.GetPixels();
-    //        newTexture.SetPixels(textureColors);
-    //        newTexture.Apply();
-    //        spriteRend.sprite = Sprite.Create(newTexture, spriteRend.sprite.rect, new Vector2(0.5f, 0.5f), spriteRend.sprite.pixelsPerUnit);
-
-    //        updatePixels(boxCollider);
-    //    }
-    //    catch (System.Exception e)
-    //    {
-    //        string errorMeesage = e.Message;
-    //    }
-    //    yield return true;
-    //}
-
-    //void updatePixels(BoxCollider2D boxCollider)
-    //{
-    //    #region Modify pixels
-    //    int w = newTexture.width;
-    //    int h = newTexture.height;
-    //    var mousePos = new Vector2(transform.position.x, transform.position.y) - (Vector2)boxCollider.bounds.min;
-    //    mousePos.x *= w / boxCollider.bounds.size.x;
-    //    mousePos.y *= h / boxCollider.bounds.size.y;
-    //    Vector2Int p = new Vector2Int((int)mousePos.x, (int)mousePos.y);
-    //    Vector2Int start = new Vector2Int();
-    //    Vector2Int end = new Vector2Int();
-    //    //if (!Drawing)
-    //    //    lastPos = p;
-    //    start.x = Mathf.Clamp(p.x - radius, 0, w);
-    //    start.y = Mathf.Clamp(p.y - radius, 0, h);
-    //    end.x = Mathf.Clamp(p.x + radius, 0, w);
-    //    end.y = Mathf.Clamp(p.y + radius, 0, h);
-    //    Vector2 dir = p;
-    //    for (int x = start.x; x < end.x; x++)
-    //    {
-    //        for (int y = start.y; y < end.y; y++)
-    //        {
-    //            Vector2 pixel = new Vector2(x, y);
-    //            Vector2 linePos = p;
-    //            //if (Drawing)
-    //            //{
-    //            //    float d = Vector2.Dot(pixel - lastPos, p) / p.sqrMagnitude;
-    //            //    d = Mathf.Clamp01(d);
-    //            //    linePos = Vector2.Lerp(lastPos, p, d);
-    //            //}
-    //            if ((pixel - linePos).sqrMagnitude <= radius * radius)
-    //            {
-    //                textureColors[x + y * w] = zeroAlpha;
-    //            }
-    //        }
-    //    }
-    //    //lastPos = p;
-    //    #endregion
-    //    #region UpdatePixels
-    //    newTexture.SetPixels(textureColors);
-    //    newTexture.Apply();
-    //    #endregion
-    //    #region Create sprite && reAdd Polygon collider
-    //    spriteRend.sprite = Sprite.Create(newTexture, spriteRend.sprite.rect, new Vector2(0.5f, 0.5f), spriteRend.sprite.pixelsPerUnit);
-    //    Destroy(spriteRend.gameObject.GetComponent<PolygonCollider2D>());
-    //    spriteRend.gameObject.AddComponent<PolygonCollider2D>();
-    //    #endregion
-
-    //    OnExplode();
-    //    Destroy(gameObject);
-    //}
-    #endregion
 }

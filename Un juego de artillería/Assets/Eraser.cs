@@ -15,7 +15,7 @@ public class Eraser : MonoBehaviour {
     public Vector2Int lastPos;
     public bool Drawing = false;
 
-    public BoxCollider2D collider;
+    public BoxCollider2D col;
     void Start()
     {
         spriteRend = gameObject.GetComponent<SpriteRenderer>();
@@ -47,9 +47,9 @@ public class Eraser : MonoBehaviour {
         if (Input.GetMouseButton(0))
         {
             hitAll = Physics2D.RaycastAll(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            hit = hitAll.ToList().Find(h => h.collider != null && h.collider == collider);
+            hit = hitAll.ToList().Find(h => h.collider != null && h.collider == col);
             //hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hit.collider != null && hit.collider == collider)
+            if (hit.collider != null && hit.collider == col)
             {
                 UpdateTexture();
                 Drawing = true;

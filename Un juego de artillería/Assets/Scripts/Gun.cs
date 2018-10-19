@@ -73,6 +73,17 @@ public class Gun : MonoBehaviour
 
     public void Fire()
     {
+        FireRocket();
+        //AirAttack();
+    }
+
+    public void Fire(float targetSpeed)
+    {
+        this.targetSpeed = targetSpeed;
+    }
+
+    void FireRocket()
+    {
         anim.SetTrigger("Shoot");
         GetComponent<AudioSource>().Play();
         Rigidbody2D bulletInstance = Instantiate(rocket, transform.position, transform.rotation) as Rigidbody2D;
@@ -89,9 +100,9 @@ public class Gun : MonoBehaviour
             bulletInstance.velocity = new Vector2(-transform.right.x, -transform.right.y).normalized * speed;
         }
         bulletInstance.GetComponentInChildren<Rocket>().ignoreTag = transform.root.tag;
-        
-        
-        
+
+
+
         targetSpeed = speed = 0;
         attackBar.localScale = Vector3.up * 2 + Vector3.forward;
         if (gunFired != null)
@@ -100,13 +111,11 @@ public class Gun : MonoBehaviour
         }
     }
 
-    public void Fire(float targetSpeed)
+    void AirAttack()
     {
-        this.targetSpeed = targetSpeed;
-    }
-
-    void FireRocket()
-    {
-
+        for (int i = 0; i < 5; i++)
+        {
+            FireRocket();
+        }
     }
 }

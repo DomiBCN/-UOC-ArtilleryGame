@@ -90,11 +90,11 @@ public class PlayerControl : MonoBehaviour
         }
         if (actions.Contains(KeyCode.UpArrow))
         {
-            tilt = tilt += 1.0f;
+            tilt += 1.0f;
         }
         else if (actions.Contains(KeyCode.DownArrow))
         {
-            tilt = tilt -= 1.0f;
+            tilt -= 1.0f;
         }
 
         tilt = Mathf.Clamp(tilt, -75, 75);
@@ -122,7 +122,7 @@ public class PlayerControl : MonoBehaviour
         else if (h < 0 && facingRight)
             // ... flip the player.
             Flip();
-        
+
         // If the player should jump...
         if (jump)
         {
