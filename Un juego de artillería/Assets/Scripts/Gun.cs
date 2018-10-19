@@ -3,9 +3,7 @@ using System.Collections;
 
 public class Gun : MonoBehaviour
 {
-
-    public Camera groundCamera;
-
+    
     public enum States { Down, Up, Fire };
     public States state = States.Up;
 
@@ -81,8 +79,6 @@ public class Gun : MonoBehaviour
 
         //We pass the animator to our rocket->to animate the camera on explode
         bulletInstance.GetComponentInChildren<Rocket>().anim = anim;
-        //pass groundCamera to rocket -> on explode capture image
-        bulletInstance.GetComponentInChildren<Rocket>().groundCam = groundCamera;
 
         if (transform.root.GetComponent<PlayerControl>().facingRight)
         {
@@ -90,7 +86,7 @@ public class Gun : MonoBehaviour
         }
         else
         {
-            bulletInstance.velocity = new Vector2(-transform.right.x, transform.right.y).normalized * speed;
+            bulletInstance.velocity = new Vector2(-transform.right.x, -transform.right.y).normalized * speed;
         }
         bulletInstance.GetComponentInChildren<Rocket>().ignoreTag = transform.root.tag;
         
@@ -107,5 +103,10 @@ public class Gun : MonoBehaviour
     public void Fire(float targetSpeed)
     {
         this.targetSpeed = targetSpeed;
+    }
+
+    void FireRocket()
+    {
+
     }
 }

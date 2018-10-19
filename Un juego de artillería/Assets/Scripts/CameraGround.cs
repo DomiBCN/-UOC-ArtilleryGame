@@ -27,7 +27,6 @@ public class CameraGround : MonoBehaviour
 
             Texture2D image = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.ARGB32, false);
 
-            //PUC TALLAR UN TROS EN CONCRET?
             Rect rect = new Rect(0, 0, renderTexture.width, renderTexture.height);
             image.ReadPixels(rect, 0, 0);
             image.Apply();

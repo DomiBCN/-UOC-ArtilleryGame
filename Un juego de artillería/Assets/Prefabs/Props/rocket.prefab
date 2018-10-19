@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6100000}
   - component: {fileID: 5000000}
   - component: {fileID: 11400000}
+  - component: {fileID: 114351617400791140}
   m_Layer: 0
   m_Name: rocket
   m_TagString: Bullet
@@ -197,7 +198,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4383004accee7494fba3cf64d65513c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  groundCam: {fileID: 0}
   explosion: {fileID: 100000, guid: 42404bf7d14c342f69690c9961a7530d, type: 2}
+  ignoreTag: 
+  anim: {fileID: 0}
+  radius: 40
 --- !u!114 &11400004
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3664,3 +3669,14 @@ Prefab:
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 100000}
   m_IsPrefabParent: 1
+--- !u!114 &114351617400791140
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180334c721bf0264ba9505827533faa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

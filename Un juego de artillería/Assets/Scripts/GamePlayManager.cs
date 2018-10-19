@@ -35,7 +35,7 @@ public class GamePlayManager : MonoBehaviour
         enemy.GetComponentInChildren<Gun>().gunFired += SwapTurn;
         heroGun.gunFired += SwapTurn;
         mainText = startButton.GetComponentsInChildren<Text>();
-        UIRoot.SetActive(false);
+        UIRoot.SetActive(true);
     }
 
     public void StartGame()
@@ -62,8 +62,8 @@ public class GamePlayManager : MonoBehaviour
         else
         {
             hero.hasTurn = !hero.hasTurn;
-            UIRoot.SetActive(hero.hasTurn);
-            cameraFollow.SetPlayerToFollow(hero.hasTurn ? hero.transform : enemy.transform);
+            //UIRoot.SetActive(hero.hasTurn);
+            //cameraFollow.SetPlayerToFollow(hero.hasTurn ? hero.transform : enemy.transform);
 
             if (!enemy.hasTurn)
             {

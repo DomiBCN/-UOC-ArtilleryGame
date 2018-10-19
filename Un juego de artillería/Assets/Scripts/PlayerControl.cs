@@ -41,24 +41,28 @@ public class PlayerControl : MonoBehaviour
 
     void Update()
     {
+        UpdateKeyboardAction(KeyCode.LeftArrow);
+        UpdateKeyboardAction(KeyCode.RightArrow);
+        UpdateKeyboardAction(KeyCode.UpArrow);
+        UpdateKeyboardAction(KeyCode.DownArrow);
+
         // The player is grounded if a linecast to the groundcheck position hits anything on the ground layer.
         grounded = Physics2D.Linecast(transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Ground"));
 
-        // If the jump button is pressed and the player is grounded then the player should jump.
-        if (Input.GetButtonDown("Jump") && grounded)
+        //// If the jump button is pressed and the player is grounded then the player should jump.
+        if (Input.GetKeyDown(KeyCode.Space) && grounded)
             jump = true;
     }
 
 
     void FixedUpdate()
     {
-        if (!hasTurn)
-        {
-            return;
-        }
+        //if (!hasTurn)
+        //{
+        //    return;
+        //}
         // Cache the horizontal input.
         float h = Input.GetAxis("Horizontal");
-        Debug.Log(h);
 
         //When we move the player using the buttons(not keyboard) -> horizontal movement won't be dected and it's value will be 0
         if (h == 0)
@@ -86,15 +90,15 @@ public class PlayerControl : MonoBehaviour
         }
         if (actions.Contains(KeyCode.UpArrow))
         {
-            tilt += 1.0f;
+            tilt = tilt += 1.0f;
         }
         else if (actions.Contains(KeyCode.DownArrow))
         {
-            tilt -= 1.0f;
+            tilt = tilt -= 1.0f;
         }
 
-        tilt = Mathf.Clamp(tilt, 0, 75);
-        pivot.rotation = Quaternion.Euler(0, 0, tilt);
+        tilt = Mathf.Clamp(tilt, -75, 75);
+        pivot.rotation = Quaternion.Euler(0, 0, facingRight ? tilt : -tilt);
 
         // The Speed animator parameter is set to the absolute value of the horizontal input.
         anim.SetFloat("Speed", Mathf.Abs(h));
@@ -118,10 +122,7 @@ public class PlayerControl : MonoBehaviour
         else if (h < 0 && facingRight)
             // ... flip the player.
             Flip();
-        if (h != 0)
-        {
-            //Debug.Log("time: " + Time.deltaTime);
-        }
+        
         // If the player should jump...
         if (jump)
         {
@@ -150,6 +151,7 @@ public class PlayerControl : MonoBehaviour
         Vector3 theScale = transform.localScale;
         theScale.x *= -1;
         transform.localScale = theScale;
+        //pivot.rotation = Quaternion.Euler(0, 0, facingRight ? tilt : -tilt);
     }
 
 
@@ -191,6 +193,18 @@ public class PlayerControl : MonoBehaviour
     }
 
     #region Movement
+    private void UpdateKeyboardAction(KeyCode code)
+    {
+        if (Input.GetKeyDown(code))
+        {
+            UpdateActionDown(code);
+        }
+        if (Input.GetKeyUp(code))
+        {
+            UpdateActionUp(code);
+        }
+    }
+
     void UpdateActionDown(KeyCode code)
     {
         if (!actions.Contains(code)) { actions.Add(code); }
