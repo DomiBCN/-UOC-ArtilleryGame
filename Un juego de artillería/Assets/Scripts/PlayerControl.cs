@@ -27,8 +27,14 @@ public class PlayerControl : MonoBehaviour
     private Animator anim;					// Reference to the player's animator component.
     Transform pivot;
     List<KeyCode> actions = new List<KeyCode>();
+    float selectorSpeed = 20f;
 
-    float increment = 0;
+    float incrementX = 0;
+    float incrementY = 0;
+    
+    [SerializeField]
+    GameObject airAttackSelector;
+    public static bool useControlsForPlayer;
 
     void Awake()
     {
@@ -36,6 +42,7 @@ public class PlayerControl : MonoBehaviour
         groundCheck = transform.Find("groundCheck");
         anim = GetComponent<Animator>();
         pivot = transform.Find("Pivot");
+        useControlsForPlayer = true;
     }
 
 
@@ -57,37 +64,48 @@ public class PlayerControl : MonoBehaviour
 
     void FixedUpdate()
     {
-        //if (!hasTurn)
-        //{
-        //    return;
-        //}
+        if (useControlsForPlayer)
+        {
+            MovePlayer();
+        }
+        else
+        {
+            Rigidbody2D selectorBody = airAttackSelector.GetComponent<Rigidbody2D>();
+
+            float h = Input.GetAxis("Horizontal");
+            h = UpdateButtonMovementHorizontal(h);
+
+            float y = Input.GetAxis("Vertical");
+            y = UpdateButtonMovementVertical(y);
+
+            selectorBody.velocity = new Vector2(h * selectorSpeed, y * selectorSpeed);
+            //// If the player is changing direction (h has a different sign to velocity.x) or hasn't reached maxSpeed yet...
+            //if (h * selectorBody.velocity.x < maxSpeed)
+            //    // ... add a force to the player.
+            //    selectorBody.AddForce(Vector2.right * h * moveForce);
+
+            //// If the player's horizontal velocity is greater than the maxSpeed...
+            //if (Mathf.Abs(selectorBody.velocity.x) > maxSpeed)
+            //{
+            //    // ... set the player's velocity to the maxSpeed in the x axis.
+            //    selectorBody.velocity = new Vector2(Mathf.Sign(selectorBody.velocity.x) * maxSpeed, selectorBody.velocity.y);
+            //}
+        }
+
+    }
+
+
+
+    void MovePlayer()
+    {
+        if (!hasTurn)
+        {
+            return;
+        }
         // Cache the horizontal input.
         float h = Input.GetAxis("Horizontal");
+        h = UpdateButtonMovementHorizontal(h);
 
-        //When we move the player using the buttons(not keyboard) -> horizontal movement won't be dected and it's value will be 0
-        if (h == 0)
-        {
-            if (actions.Contains(KeyCode.A))
-            {
-                if (increment > -1)
-                {
-                    increment += -0.1f;
-                }
-                h = increment;
-            }
-            else if (actions.Contains(KeyCode.D))
-            {
-                if (increment < 1)
-                {
-                    increment += 0.1f;
-                }
-                h = increment;
-            }
-            else
-            {
-                increment = 0;
-            }
-        }
         if (actions.Contains(KeyCode.UpArrow))
         {
             tilt += 1.0f;
@@ -141,7 +159,6 @@ public class PlayerControl : MonoBehaviour
         }
     }
 
-
     protected void Flip()
     {
         // Switch the way the player is labelled as facing.
@@ -193,6 +210,64 @@ public class PlayerControl : MonoBehaviour
     }
 
     #region Movement
+    float UpdateButtonMovementVertical(float verticalMovement)
+    {
+        //When we move the player using the buttons(not keyboard) -> vertical movement won't be dected and it's value will be 0
+        if (verticalMovement == 0)
+        {
+            if (actions.Contains(KeyCode.DownArrow))
+            {
+                if (incrementY > -1)
+                {
+                    incrementY += -0.1f;
+                }
+                verticalMovement = incrementY;
+            }
+            else if (actions.Contains(KeyCode.UpArrow))
+            {
+                if (incrementY < 1)
+                {
+                    incrementY += 0.1f;
+                }
+                verticalMovement = incrementY;
+            }
+            else
+            {
+                incrementY = 0;
+            }
+        }
+        return verticalMovement;
+    }
+
+    float UpdateButtonMovementHorizontal(float horizontalMovement)
+    {
+        //When we move the player using the buttons(not keyboard) -> horizontal movement won't be dected and it's value will be 0
+        if (horizontalMovement == 0)
+        {
+            if (actions.Contains(KeyCode.A))
+            {
+                if (incrementX > -1)
+                {
+                    incrementX += -0.1f;
+                }
+                horizontalMovement = incrementX;
+            }
+            else if (actions.Contains(KeyCode.D))
+            {
+                if (incrementX < 1)
+                {
+                    incrementX += 0.1f;
+                }
+                horizontalMovement = incrementX;
+            }
+            else
+            {
+                incrementX = 0;
+            }
+        }
+        return horizontalMovement;
+    }
+
     private void UpdateKeyboardAction(KeyCode code)
     {
         if (Input.GetKeyDown(code))
@@ -261,6 +336,23 @@ public class PlayerControl : MonoBehaviour
         if (grounded)
         {
             jump = true;
+        }
+    }
+
+    public void SetPlayerWeapon(int w)
+    {
+        transform.GetComponentInChildren<Gun>().currentWeapon = (Gun.Weapons)w;
+        if ((Gun.Weapons)w == Gun.Weapons.Rocket)
+        {
+            airAttackSelector.SetActive(false);
+            useControlsForPlayer = true;
+            Camera.main.GetComponent<CameraFollow>().SetPlayerToFollow(transform);
+        }
+        else
+        {
+            airAttackSelector.SetActive(true);
+            useControlsForPlayer = false;
+            Camera.main.GetComponent<CameraFollow>().SetPlayerToFollow(airAttackSelector.transform);
         }
     }
 }

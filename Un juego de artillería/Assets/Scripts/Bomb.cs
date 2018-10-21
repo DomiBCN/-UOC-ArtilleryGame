@@ -82,7 +82,7 @@ public class Bomb : MonoBehaviour
 
                 //explodePixels = false;
                 //Creates explosion crater setting pixels to alpha 0
-                PixelsToAlpha.UpdateTexture(new Vector2(transform.position.x, transform.position.y), en.gameObject, boxCollider, radius);
+                //PixelsToAlpha.UpdateTexture(new Vector2(transform.position.x, transform.position.y), en.gameObject, boxCollider, radius);
 
             }
         }

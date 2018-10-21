@@ -4,16 +4,49 @@ using UnityEngine;
 
 public class PixelsToAlpha : MonoBehaviour
 {
-    
-    static Vector2 explosionPoint;
-    static BoxCollider2D boxCollider;
-    static Texture2D newTexture;
-    static Color[] textureColors;
-    static SpriteRenderer spriteRend;
-    static Color zeroAlpha = Color.clear;
-    static int radius;
 
-    public static void UpdateTexture(Vector2 position, GameObject objectToExplode, BoxCollider2D boxCol, int explosionRadius)
+    Vector2 explosionPoint;
+    BoxCollider2D boxCollider;
+    Texture2D newTexture;
+    Color[] textureColors;
+    SpriteRenderer spriteRend;
+    Color zeroAlpha = Color.clear;
+    int radius;
+
+    bool updatePix = false;
+
+    Vector2 position;
+    GameObject objectToExplode;
+    BoxCollider2D boxCol;
+    int explosionRadius;
+
+    public void UpdateTexture(Vector2 position, GameObject objectToExplode, BoxCollider2D boxCol, int explosionRadius)
+    {
+        this.position = position;
+        this.objectToExplode = objectToExplode;
+        this.boxCol = boxCol;
+        this.explosionRadius = explosionRadius;
+
+        updatePix = true;
+    }
+
+    private void FixedUpdate()
+    {
+        if (updatePix)
+        {
+            //In case we are launching an AirAttack we need to ensure that rockets are evaluated one by one.
+            //Otherwise each rocket will be doing copies of the textures and modifying them at the same time.
+            //And the final rendered texture we will use to update the sprite, won't be the result of all the rockets destruction
+            if (!GamePlayManager.coroutineExplosionOn)
+            {
+                GamePlayManager.coroutineExplosionOn = true;
+                updatePix = false;
+                StartCoroutine("UpdatePixels");
+            }
+        }
+    }
+
+    void LoadData()
     {
         explosionPoint = position;
         boxCollider = boxCol;
@@ -27,12 +60,12 @@ public class PixelsToAlpha : MonoBehaviour
         newTexture.SetPixels(textureColors);
         newTexture.Apply();
         spriteRend.sprite = Sprite.Create(newTexture, spriteRend.sprite.rect, new Vector2(0.5f, 0.5f), spriteRend.sprite.pixelsPerUnit);
-
-        UpdatePixels();
     }
-    
-    static void UpdatePixels()
+
+    IEnumerator UpdatePixels()
     {
+        LoadData();
+        yield return null;
         #region Modify pixels
         int w = newTexture.width;
         int h = newTexture.height;
@@ -59,15 +92,20 @@ public class PixelsToAlpha : MonoBehaviour
             }
         }
         #endregion
+        yield return null;
         #region UpdatePixels
         newTexture.SetPixels(textureColors);
         newTexture.Apply();
         #endregion
+        yield return null;
         #region Create sprite && reAdd Polygon collider
         spriteRend.sprite = Sprite.Create(newTexture, spriteRend.sprite.rect, new Vector2(0.5f, 0.5f), spriteRend.sprite.pixelsPerUnit);
         Destroy(spriteRend.gameObject.GetComponent<PolygonCollider2D>());
         spriteRend.gameObject.AddComponent<PolygonCollider2D>();
         #endregion
-        
+        yield return null;
+        transform.root.GetComponent<Rocket>().OnExplode();
+        Destroy(gameObject);
+        GamePlayManager.coroutineExplosionOn = false;
     }
 }

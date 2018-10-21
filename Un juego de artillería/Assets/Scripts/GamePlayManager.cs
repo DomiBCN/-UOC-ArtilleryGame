@@ -17,8 +17,7 @@ public class GamePlayManager : MonoBehaviour
     GameObject startButton;
     [SerializeField]
     GameObject attackButton;
-    [SerializeField]
-    CameraFollow cameraFollow;
+    public CameraFollow cameraFollow;
     [SerializeField]
     GameObject UIRoot;
 
@@ -27,6 +26,7 @@ public class GamePlayManager : MonoBehaviour
     GameObject[] UI;
     Gun heroGun;
 
+    public static bool coroutineExplosionOn = false;
 
     // Use this for initialization
     void Start()
@@ -62,9 +62,16 @@ public class GamePlayManager : MonoBehaviour
         else
         {
             hero.hasTurn = !hero.hasTurn;
-            //UIRoot.SetActive(hero.hasTurn);
-            //cameraFollow.SetPlayerToFollow(hero.hasTurn ? hero.transform : enemy.transform);
-
+            UIRoot.SetActive(hero.hasTurn);
+            cameraFollow.SetPlayerToFollow(hero.hasTurn ? hero.transform : enemy.transform);
+            if (!hero.hasTurn)
+            {
+                enemy.GetComponent<PlayerControl>().SetPlayerWeapon(0);
+            }
+            else
+            {
+                hero.GetComponent<PlayerControl>().SetPlayerWeapon(0);
+            }
             if (!enemy.hasTurn)
             {
                 yield return new WaitForSeconds(2f);

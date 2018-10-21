@@ -15,18 +15,26 @@ public class Rocket : MonoBehaviour
 
     void Start()
     {
+        
+        if(PlayerPrefs.GetInt("Exploded", 0) != 1)
+        {
+            //Camera.main.GetComponent<CameraFollow>().SetPlayerToFollow(transform);
+            PlayerPrefs.SetInt("Exploded", 0);
+        }
         // Destroy the rocket after 2 seconds if it doesn't get destroyed before then.
         Destroy(gameObject, 5);
     }
 
 
-    void OnExplode()
+    public void OnExplode()
     {
         // Create a quaternion with a random rotation in the z-axis.
         Quaternion randomRotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
 
         // Instantiate the explosion where the rocket is with the random rotation.
         Instantiate(explosion, transform.position, randomRotation);
+
+        PlayerPrefs.SetInt("Exploded", 1);
 
         //CAMERA VIBRATION EFFECT
         //anim.SetTrigger("Boom");
@@ -136,12 +144,20 @@ public class Rocket : MonoBehaviour
             CircleCollider2D explosionRadius = explosion.AddComponent<CircleCollider2D>();
             explosionRadius.radius = 2.5f;
 
-            //Creates explosion crater setting pixels to alpha 0
-            PixelsToAlpha.UpdateTexture(new Vector2(transform.position.x, transform.position.y), col.gameObject, boxCollider, radius);
-            // Instantiate the explosion and destroy the rocket.
-            OnExplode();
-            Destroy(gameObject);
-
+            //we don't want to remove player pixels
+            if (col.gameObject.tag != "Player" && col.gameObject.tag != "Enemy")
+            {
+                //Pixel destruction evaluation will take a while, and the rocket would keep going, that's why we have to set the rigidbody to static once the rocket has collided
+                gameObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+                //Creates explosion crater setting pixels to alpha 0
+                transform.GetComponent<PixelsToAlpha>().UpdateTexture(new Vector2(transform.position.x, transform.position.y), col.gameObject, boxCollider, radius);
+            }
+            else
+            {
+                OnExplode();
+                Destroy(gameObject);
+            }
+            
         }
         #endregion
     }
