@@ -19,13 +19,15 @@ public class PixelsToAlpha : MonoBehaviour
     GameObject objectToExplode;
     BoxCollider2D boxCol;
     int explosionRadius;
+    Gun.Weapons weaponToExplode;
 
-    public void UpdateTexture(Vector2 position, GameObject objectToExplode, BoxCollider2D boxCol, int explosionRadius)
+    public void UpdateTexture(Vector2 position, GameObject objectToExplode, BoxCollider2D boxCol, int explosionRadius, Gun.Weapons weaponToExplode)
     {
         this.position = position;
         this.objectToExplode = objectToExplode;
         this.boxCol = boxCol;
         this.explosionRadius = explosionRadius;
+        this.weaponToExplode = weaponToExplode;
 
         updatePix = true;
     }
@@ -104,7 +106,14 @@ public class PixelsToAlpha : MonoBehaviour
         spriteRend.gameObject.AddComponent<PolygonCollider2D>();
         #endregion
         yield return null;
-        transform.root.GetComponent<Rocket>().OnExplode();
+        if (weaponToExplode == Gun.Weapons.Rocket)
+        {
+            transform.root.GetComponent<Rocket>().OnExplode();
+        }
+        else if(weaponToExplode == Gun.Weapons.Bomb)
+        {
+            transform.root.GetComponent<Bomb>().FinalExplosion();
+        }
         Destroy(gameObject);
         GamePlayManager.coroutineExplosionOn = false;
     }

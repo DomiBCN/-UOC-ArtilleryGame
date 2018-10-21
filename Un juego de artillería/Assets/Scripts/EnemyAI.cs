@@ -31,8 +31,13 @@ public class EnemyAI : PlayerControl
 
     void LateUpdate()
     {
-        if (hasTurn)
+        if (hasTurn && !gun.fired)
         {
+            //if the gun hasn't been fired, playerPrefs 'Exploded' value should be 0. Otherwise force it
+            if(PlayerPrefs.GetInt("Exploded", 0) == 1)
+            {
+                PlayerPrefs.SetInt("Exploded", 0);
+            }
             if (facingRight)
             {
                 Flip();

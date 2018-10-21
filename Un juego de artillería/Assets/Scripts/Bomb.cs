@@ -58,36 +58,68 @@ public class Bomb : MonoBehaviour
         // Find all the colliders on the Enemies layer within the bombRadius.
         //Collider2D[] enemies = Physics2D.OverlapCircleAll(transform.position, bombRadius, 1 << LayerMask.NameToLayer("Enemies"));
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 2f);
-        
-        // For each collider...
-        foreach (Collider2D en in hitColliders)
+
+        Collider2D enemyCollider = hitColliders.Where(h => h.tag == "Enemy").FirstOrDefault();
+        if(enemyCollider != null)
         {
-            // Check if it has a rigidbody (since there is only one per enemy, on the parent).
-            Rigidbody2D rb = en.GetComponent<Rigidbody2D>();
-            if (rb != null && rb.tag == "Enemy")
-            {
-                // Find the Enemy script and set the enemy's health to zero.
-                rb.gameObject.GetComponent<Enemy>().HP = 0;
+            Rigidbody2D rb = enemyCollider.GetComponent<Rigidbody2D>();
+            // Find the Enemy script and set the enemy's health to zero.
+            rb.gameObject.GetComponent<Enemy>().HP = 0;
 
-                // Find a vector from the bomb to the enemy.
-                Vector3 deltaPos = rb.transform.position - transform.position;
+            // Find a vector from the bomb to the enemy.
+            Vector3 deltaPos = rb.transform.position - transform.position;
 
-                // Apply a force in this direction with a magnitude of bombForce.
-                Vector3 force = deltaPos.normalized * bombForce;
-                rb.AddForce(force);
-            }
-            else if (en.tag != "Bullet" && en.tag != "Player" && en.tag != "Bullet" && en.tag != "BombPickup" && en.tag != "PlatformEnd" && !en.isTrigger)
-            {
-                BoxCollider2D boxCollider = en.gameObject.GetComponent<BoxCollider2D>();
-
-                //explodePixels = false;
-                //Creates explosion crater setting pixels to alpha 0
-                //PixelsToAlpha.UpdateTexture(new Vector2(transform.position.x, transform.position.y), en.gameObject, boxCollider, radius);
-
-            }
+            // Apply a force in this direction with a magnitude of bombForce.
+            Vector3 force = deltaPos.normalized * bombForce;
+            rb.AddForce(force);
         }
 
-        // Set the explosion effect's position to the bomb's position and play the particle system.
+        Collider2D obstacleHit = hitColliders.Where(h => h.tag != "Bullet" && h.tag != "Player" && h.tag != "Bullet" && h.tag != "BombPickup" && h.tag != "PlatformEnd" && !h.isTrigger).FirstOrDefault();
+
+        if (obstacleHit != null)
+        {
+            BoxCollider2D boxCollider = obstacleHit.gameObject.GetComponent<BoxCollider2D>();
+            //Creates explosion crater setting pixels to alpha 0
+            transform.GetComponent<PixelsToAlpha>().UpdateTexture(new Vector2(transform.position.x, transform.position.y), boxCollider.gameObject, boxCollider, radius, Gun.Weapons.Bomb);
+        }
+        else
+        {
+            FinalExplosion();
+        }
+        
+
+        //// For each collider...
+        //foreach (Collider2D en in hitColliders)
+        //{
+        //    // Check if it has a rigidbody (since there is only one per enemy, on the parent).
+        //    Rigidbody2D rb = en.GetComponent<Rigidbody2D>();
+        //    if (rb != null && rb.tag == "Enemy")
+        //    {
+        //        // Find the Enemy script and set the enemy's health to zero.
+        //        rb.gameObject.GetComponent<Enemy>().HP = 0;
+
+        //        // Find a vector from the bomb to the enemy.
+        //        Vector3 deltaPos = rb.transform.position - transform.position;
+
+        //        // Apply a force in this direction with a magnitude of bombForce.
+        //        Vector3 force = deltaPos.normalized * bombForce;
+        //        rb.AddForce(force);
+        //    }
+        //    else if (en.tag != "Bullet" && en.tag != "Player" && en.tag != "Bullet" && en.tag != "BombPickup" && en.tag != "PlatformEnd" && !en.isTrigger)
+        //    {
+        //        BoxCollider2D boxCollider = en.gameObject.GetComponent<BoxCollider2D>();
+
+        //        //explodePixels = false;
+        //        //Creates explosion crater setting pixels to alpha 0
+        //        //PixelsToAlpha.UpdateTexture(new Vector2(transform.position.x, transform.position.y), en.gameObject, boxCollider, radius);
+
+        //    }
+        //}
+        
+    }
+
+    public void FinalExplosion()
+    {
         explosionFX.transform.position = transform.position;
         explosionFX.Play();
 

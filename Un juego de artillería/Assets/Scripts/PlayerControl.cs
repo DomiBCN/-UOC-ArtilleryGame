@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class PlayerControl : MonoBehaviour
 {
@@ -34,6 +35,10 @@ public class PlayerControl : MonoBehaviour
     
     [SerializeField]
     GameObject airAttackSelector;
+    [SerializeField]
+    Image rocketBtn;
+    [SerializeField]
+    Image airAttackBtn;
     public static bool useControlsForPlayer;
 
     void Awake()
@@ -68,7 +73,7 @@ public class PlayerControl : MonoBehaviour
         {
             MovePlayer();
         }
-        else
+        else if (hasTurn)
         {
             Rigidbody2D selectorBody = airAttackSelector.GetComponent<Rigidbody2D>();
 
@@ -79,17 +84,6 @@ public class PlayerControl : MonoBehaviour
             y = UpdateButtonMovementVertical(y);
 
             selectorBody.velocity = new Vector2(h * selectorSpeed, y * selectorSpeed);
-            //// If the player is changing direction (h has a different sign to velocity.x) or hasn't reached maxSpeed yet...
-            //if (h * selectorBody.velocity.x < maxSpeed)
-            //    // ... add a force to the player.
-            //    selectorBody.AddForce(Vector2.right * h * moveForce);
-
-            //// If the player's horizontal velocity is greater than the maxSpeed...
-            //if (Mathf.Abs(selectorBody.velocity.x) > maxSpeed)
-            //{
-            //    // ... set the player's velocity to the maxSpeed in the x axis.
-            //    selectorBody.velocity = new Vector2(Mathf.Sign(selectorBody.velocity.x) * maxSpeed, selectorBody.velocity.y);
-            //}
         }
 
     }
@@ -344,12 +338,17 @@ public class PlayerControl : MonoBehaviour
         transform.GetComponentInChildren<Gun>().currentWeapon = (Gun.Weapons)w;
         if ((Gun.Weapons)w == Gun.Weapons.Rocket)
         {
+            rocketBtn.color = new Color(rocketBtn.color.r, rocketBtn.color.g, rocketBtn.color.b, 1);
+            airAttackBtn.color = new Color(airAttackBtn.color.r, airAttackBtn.color.g, airAttackBtn.color.b, 0.49f);
             airAttackSelector.SetActive(false);
             useControlsForPlayer = true;
             Camera.main.GetComponent<CameraFollow>().SetPlayerToFollow(transform);
         }
         else
         {
+            airAttackBtn.color = new Color(airAttackBtn.color.r, airAttackBtn.color.g, airAttackBtn.color.b, 1);
+            rocketBtn.color = new Color(rocketBtn.color.r, rocketBtn.color.g, rocketBtn.color.b, 0.49f);
+            airAttackSelector.transform.position = new Vector3(transform.position.x + 15, transform.position.y, transform.position.z);
             airAttackSelector.SetActive(true);
             useControlsForPlayer = false;
             Camera.main.GetComponent<CameraFollow>().SetPlayerToFollow(airAttackSelector.transform);

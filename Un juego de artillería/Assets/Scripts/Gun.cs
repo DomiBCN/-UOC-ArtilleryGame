@@ -5,9 +5,10 @@ public class Gun : MonoBehaviour
 {
 
     public enum States { Down, Up, Fire };
-    public enum Weapons { Rocket, AirAttack };
-
+    public enum Weapons { Rocket, AirAttack, Bomb };
+    [HideInInspector]
     public States state = States.Up;
+    [HideInInspector]
     public Weapons currentWeapon = Weapons.Rocket;
 
     public Rigidbody2D rocket;				// Prefab of the rocket.
@@ -23,11 +24,12 @@ public class Gun : MonoBehaviour
     float airAttackSpeed = 10f;
     Transform attackBar;
 
-    bool fired = false;
+    public bool fired = false;
 
     // Setting up the references.
     void Awake()
     {
+        currentWeapon = Weapons.Rocket;
         anim = transform.root.gameObject.GetComponent<Animator>();
         GameObject attackBarObject = new GameObject("Power");
         attackBar = attackBarObject.transform;
@@ -68,6 +70,7 @@ public class Gun : MonoBehaviour
         {
             if (PlayerPrefs.GetInt("Exploded", 0) == 1)
             {
+                PlayerPrefs.SetInt("Exploded", 0);
                 fired = false;
                 gunFired();
             }
@@ -128,9 +131,10 @@ public class Gun : MonoBehaviour
         anim.SetTrigger("Shoot");
         GetComponent<AudioSource>().Play();
         Rigidbody2D bulletInstance = Instantiate(rocket, transform.position, transform.rotation) as Rigidbody2D;
-
+        Rocket bulletScript = bulletInstance.GetComponent<Rocket>();
+        bulletScript.rocketOrigin = transform.root.transform;
         //We pass the animator to our rocket->to animate the camera on explode
-        bulletInstance.GetComponentInChildren<Rocket>().anim = anim;
+        bulletScript.anim = anim;
 
         if (transform.root.GetComponent<PlayerControl>().facingRight)
         {
@@ -139,6 +143,7 @@ public class Gun : MonoBehaviour
         else
         {
             bulletInstance.velocity = new Vector2(-transform.right.x, -transform.right.y).normalized * speed;
+            bulletInstance.transform.localScale = new Vector3(bulletInstance.transform.localScale.x * -1, bulletInstance.transform.localScale.y, bulletInstance.transform.localScale.z);
         }
         bulletInstance.GetComponentInChildren<Rocket>().ignoreTag = transform.root.tag;
 
@@ -161,10 +166,12 @@ public class Gun : MonoBehaviour
             GetComponent<AudioSource>().Play();
 
             Rigidbody2D bulletInstance = Instantiate(rocket, new Vector3(airAttackSelector.position.x - (isEnemy ? -posx : posx), posY, airAttackSelector.position.z), airAttackSelector.rotation) as Rigidbody2D;
-            //Rigidbody2D bulletInstance = Instantiate(rocket, airAttackSelector.position - new Vector3(posx, 0, 0), Quaternion.Euler(airAttackSelector.position.x, airAttackSelector.position.y, isEnemy ? -120 : -60)) as Rigidbody2D;
+            Rocket bulletScript = bulletInstance.GetComponent<Rocket>();
+            bulletScript.rocketOrigin = transform.root.transform;
+           
             bulletInstance.transform.rotation = Quaternion.Euler(0, 0, isEnemy ? -120 : -60);
             //We pass the animator to our rocket->to animate the camera on explode
-            bulletInstance.GetComponentInChildren<Rocket>().anim = anim;
+            bulletScript.anim = anim;
 
             bulletInstance.velocity = bulletInstance.transform.right.normalized * airAttackSpeed;
 

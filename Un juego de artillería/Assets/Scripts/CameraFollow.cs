@@ -11,7 +11,7 @@ public class CameraFollow : MonoBehaviour
 	public Vector2 minXAndY;		// The minimum x and y coordinates the camera can have.
 
 
-	private Transform tracking;		// Reference to the player's transform.
+	public Transform tracking;		// Reference to the player's transform.
 
 	void Awake ()
 	{
@@ -36,13 +36,10 @@ public class CameraFollow : MonoBehaviour
 
 	void FixedUpdate ()
 	{
-        ////If movePlayer has changed -> follow selector(point selector attacks)
-        ////if(PlayerControl.movePlayer != trackingPlayer)
-        //{
-        //    tracking = PlayerControl.useControlsForPlayer ? GameObject.FindGameObjectWithTag("Player").transform : GameObject.FindGameObjectWithTag("AirAttackSelector").transform;
-        //}
-        TrackPlayer();
-
+        if (tracking != null)
+        {
+            TrackPlayer();
+        }
     }
 	
 	
